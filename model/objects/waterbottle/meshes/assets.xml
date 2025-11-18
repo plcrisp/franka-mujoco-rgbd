@@ -1,0 +1,7 @@
+<mujocoinclude model="">
+    <asset>
+        <mesh name="waterbottle" file="../object_sim/waterbottle/waterbottle.stl"/>
+        <mesh name="contact0" file="../object_sim/waterbottle/contact0.stl"/>
+        <mesh name="contact1" file="../object_sim/waterbottle/contact1.stl"/>
+    </asset>
+</mujocoinclude>

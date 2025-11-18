@@ -1,0 +1,6 @@
+<mujocoinclude model="">
+    <geom name="waterbottle_visual" mesh="waterbottle"/>
+    <geom type="cylinder" size=".013 .0055" pos="0 0 .063" rgba="0.31 0.1 0.75 1"/>
+    <geom name="waterbottle_contact0" mesh="contact0" class="object_col"/>
+    <geom name="waterbottle_contact1" mesh="contact1" class="object_col"/>
+</mujocoinclude>

@@ -1,0 +1,11 @@
+<mujoco>
+  <compiler meshdir=".." />
+
+  <include file="../common.xml" />
+  <include file="assets.xml" />
+  <worldbody>
+    <body name="object" pos="0 0 0.05" childclass="grab">
+      <include file="body.xml"/>
+    </body>
+  </worldbody>
+</mujoco>
