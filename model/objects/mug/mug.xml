@@ -26,7 +26,7 @@
             <geom name="mug_visual"
                   type="mesh"
                   mesh="mug_mesh"
-                  rgba="1 1 1 1"
+                  rgba="0.1 0.5 0.8 1"
                   contype="0"
                   conaffinity="0"
                   group="1"

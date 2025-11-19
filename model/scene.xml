@@ -3,6 +3,7 @@
   <include file="panda/panda.xml"/>
   <include file="objects/waterbottle/waterbottle.xml"/>
   <include file="objects/mug/mug.xml"/>
+  <include file="objects/hammer/hammer.xml"/>
 
   <statistic center="0.3 0 0.4" extent="1"/>
 
@@ -23,8 +24,9 @@
 
   <asset>
     <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
-    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.2 0.3 0.4"
-      markrgb="0.2 0.3 0.4" width="300" height="300"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge"
+         rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"
+         markrgb="0.7 0.7 0.7" width="300" height="300"/>
     <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
   </asset>
 
@@ -32,7 +34,7 @@
 
     
 
-    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
+    <light pos="0 0 3" dir="0 0 -1" directional="true"/>
     <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
 
     <body name="table" pos="0.5 0 0.35">
@@ -41,45 +43,35 @@
             type="box" 
             size="0.5 0.75 0.02" 
             pos="0 0 0.35" 
-            rgba=".8 .8 .8 1"/> 
+            rgba="0.76 0.60 0.42 1"/> 
       <geom name="table_leg1" 
             type="box" 
             size="0.02 0.02 0.35" 
             pos="0.48 0.73 0" 
-            rgba=".5 .5 .5 1"/>
+            rgba="0.55 0.40 0.30 1"/>
       <geom name="table_leg2" 
             type="box" 
             size="0.02 0.02 0.35" 
             pos="0.48 -0.73 0" 
-            rgba=".5 .5 .5 1"/>
+            rgba="0.55 0.40 0.30 1"/>
       <geom name="table_leg3" 
             type="box" 
             size="0.02 0.02 0.35" 
             pos="-0.48 0.73 0" 
-            rgba=".5 .5 .5 1"/>
+            rgba="0.55 0.40 0.30 1"/>
       <geom name="table_leg4" 
             type="box" 
             size="0.02 0.02 0.35" 
             pos="-0.48 -0.73 0" 
-            rgba=".5 .5 .5 1"/>
+            rgba="0.55 0.40 0.30 1"/>
     </body >
 
     
 
-    <geom name="wall_back" 
-          type="box" 
-          size="0.02 5 1.25" 
-          pos="-1 0 1.25" 
-          rgba=".7 .7 .7 1"/>
-    <geom name="wall_left" 
-          type="box" 
-          size="5 0.02 1.25" 
-          pos="0 5 1.25" 
-          rgba=".7 .7 .7 1"/>
-    <geom name="wall_right" 
-          type="box" 
-          size="5 0.02 1.25" 
-          pos="0 -5 1.25" 
-          rgba=".7 .7 .7 1"/>        
+    <geom name="wall_back"  type="box" size="5 0.02 1.25" pos="0 5 1.25" rgba="0.85 0.85 0.85 1"/>
+    <geom name="wall_front" type="box" size="5 0.02 1.25" pos="0 -5 1.25" rgba="0.85 0.85 0.85 1"/>
+    <geom name="wall_left"  type="box" size="0.02 5 1.25" pos="-5 0 1.25" rgba="0.85 0.85 0.85 1"/>
+    <geom name="wall_right" type="box" size="0.02 5 1.25" pos="5 0 1.25" rgba="0.85 0.85 0.85 1"/>
+     
   </worldbody>
 </mujoco>
