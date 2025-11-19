@@ -3,8 +3,6 @@
   <include file="panda/panda.xml"/>
   <include file="objects/waterbottle/waterbottle.xml"/>
 
-
-
   <statistic center="0.3 0 0.4" extent="1"/>
 
   <option timestep="0.005" iterations="5" ls_iterations="8" integrator="implicitfast">
