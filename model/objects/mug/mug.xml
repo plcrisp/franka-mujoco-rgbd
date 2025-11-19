@@ -1,0 +1,53 @@
+<mujoco model="panda scene">
+
+    <asset>
+        <mesh name="mug_mesh" file="objects/mug/meshes/mug.stl" scale="1 1 1"/>
+
+        <mesh name="m_contact0_mesh" file="objects/mug/meshes/contact0.stl"/>
+        <mesh name="m_contact1_mesh" file="objects/mug/meshes/contact1.stl"/>
+        <mesh name="m_contact2_mesh" file="objects/mug/meshes/contact2.stl"/>
+        <mesh name="m_contact3_mesh" file="objects/mug/meshes/contact3.stl"/>
+        <mesh name="m_contact4_mesh" file="objects/mug/meshes/contact4.stl"/>
+        <mesh name="m_contact5_mesh" file="objects/mug/meshes/contact5.stl"/>
+        <mesh name="m_contact6_mesh" file="objects/mug/meshes/contact6.stl"/>
+        <mesh name="m_contact7_mesh" file="objects/mug/meshes/contact7.stl"/>
+        <mesh name="m_contact8_mesh" file="objects/mug/meshes/contact8.stl"/>
+        <mesh name="m_contact9_mesh" file="objects/mug/meshes/contact9.stl"/>
+        <mesh name="m_contact10_mesh" file="objects/mug/meshes/contact10.stl"/>
+        <mesh name="m_contact11_mesh" file="objects/mug/meshes/contact11.stl"/>
+        <mesh name="m_contact12_mesh" file="objects/mug/meshes/contact12.stl"/>
+        <mesh name="m_contact13_mesh" file="objects/mug/meshes/contact13.stl"/>
+    </asset>
+
+    <worldbody>
+        <body name="mug" pos="0.5 0.2 0.72">
+            <freejoint/>
+
+            <geom name="mug_visual"
+                  type="mesh"
+                  mesh="mug_mesh"
+                  rgba="1 1 1 1"
+                  contype="0"
+                  conaffinity="0"
+                  group="1"
+                  density="0"/>
+
+            <geom name="m_colision_c0"  type="mesh" mesh="m_contact0_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c1"  type="mesh" mesh="m_contact1_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c2"  type="mesh" mesh="m_contact2_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c3"  type="mesh" mesh="m_contact3_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c4"  type="mesh" mesh="m_contact4_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c5"  type="mesh" mesh="m_contact5_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c6"  type="mesh" mesh="m_contact6_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c7"  type="mesh" mesh="m_contact7_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c8"  type="mesh" mesh="m_contact8_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c9"  type="mesh" mesh="m_contact9_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c10" type="mesh" mesh="m_contact10_mesh" rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c11" type="mesh" mesh="m_contact11_mesh" rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c12" type="mesh" mesh="m_contact12_mesh" rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+            <geom name="m_colision_c13" type="mesh" mesh="m_contact13_mesh" rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
+        </body>
+
+    </worldbody>
+
+</mujoco>
