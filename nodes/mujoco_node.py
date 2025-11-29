@@ -10,7 +10,7 @@ import logging
 logging.getLogger('glfw').setLevel(logging.ERROR)
 
 # Constants
-XML_PATH = "model/scene.xml"
+XML_PATH = "../model/scene.xml"
 CAM_NAME = "end_effector_camera"
 WIDTH, HEIGHT = 1280, 720
 
