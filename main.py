@@ -16,9 +16,6 @@ print("RGB-D + PointCloud capture enabled.")
 renderer = mujoco.Renderer(m, 720, 1280)
 
 os.makedirs("photos", exist_ok=True)
-os.makedirs("photos/rgb", exist_ok=True)
-os.makedirs("photos/depth/png", exist_ok=True)
-os.makedirs("photos/depth/npy", exist_ok=True)
 last_photo = time.time()
 
 cam_id = m.camera(CAMERA_NAME).id
@@ -52,14 +49,14 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
             t = int(time.time())
 
             # SAVE RGB
-            cv2.imwrite(f"photos/rgb/{t}.png", rgb_vis)
+            cv2.imwrite(f"photos/{t}_rgb.png", rgb_vis)
 
             # SAVE DEPTH VISUALIZATION
             depth_vis = (depth / depth.max() * 255).astype(np.uint8)
-            cv2.imwrite(f"photos/depth/png/{t}.png", depth_vis)
+            cv2.imwrite(f"photos/{t}_depth.png", depth_vis)
 
             # SAVE DEPTH REAL (float32)
-            np.save(f"photos/depth/npy/{t}.npy", depth)
+            np.save(f"photos/{t}_depth.npy", depth)
 
             print(f"Saved RGB, Depth PNG and Depth NPY at time {t}")
 
