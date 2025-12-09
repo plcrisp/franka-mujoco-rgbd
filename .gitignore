@@ -2,3 +2,9 @@ photos/*
 .gitignore
 .venv/*
 *.pt
+dataset/*
+dataset_final/*
+photos/*
+runs/*
+dataset/*
+dataset_final/*
