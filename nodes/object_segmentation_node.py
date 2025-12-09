@@ -10,8 +10,8 @@ class ObjectSegmentationNode(Node):
         super().__init__('object_segmentation_node')
 
         # Load YOLOv8 segmentation model
-        self.model = YOLO("yolov8n-seg.pt") 
-
+        self.model = YOLO("../runs/detect/franka_model_v14/weights/best.pt") 
+        
         # Subscribe to RGB camera topic
         self.subscription = self.create_subscription(
             Image,
@@ -31,7 +31,7 @@ class ObjectSegmentationNode(Node):
             return
 
         # Run YOLO segmentation
-        results = self.model(cv_image, verbose=False, conf=0.1)  
+        results = self.model(cv_image, verbose=False, conf=0.5)  
 
         # Draw predictions
         annotated_frame = results[0].plot()
@@ -60,8 +60,7 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        if rclpy.ok():
-            rclpy.shutdown()
+        rclpy.shutdown()
         cv2.destroyAllWindows()
 
 if __name__ == '__main__':
