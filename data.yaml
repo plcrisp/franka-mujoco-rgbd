@@ -1,0 +1,6 @@
+path: ./dataset_final
+train: train/images
+val: valid/images
+
+nc: 3
+names: ['hammer', 'mug', 'water']
