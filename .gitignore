@@ -8,3 +8,5 @@ photos/*
 runs/*
 dataset/*
 dataset_final/*
+*.mjb
+*.mjd
