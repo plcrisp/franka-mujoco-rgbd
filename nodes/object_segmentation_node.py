@@ -10,7 +10,7 @@ class ObjectSegmentationNode(Node):
         super().__init__('object_segmentation_node')
 
         # Load YOLOv8 segmentation model
-        self.model = YOLO("../runs/segment/franka_seg/weights/best.pt") 
+        self.model = YOLO("runs/segment/franka_seg/weights/best.pt") 
         
         # Subscribe to RGB camera topic
         self.subscription = self.create_subscription(
