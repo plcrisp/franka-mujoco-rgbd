@@ -1,24 +1,22 @@
 from ultralytics import YOLO
 import os
 
-# Garante que estamos no diretório certo
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 
-print("🚀 Iniciando Treinamento YOLOv8...")
+print("🚀 Starting YOLOv8 training...")
 
-# Carrega modelo pré-treinado
-model = YOLO('yolov8n.pt') 
+# Load pretrained model
+model = YOLO('yolov8n-seg.pt')
 
-# Treina
-# Certifique-se que no seu data.yaml o path está correto ou absoluto!
+# Train model
 results = model.train(
-    data='data.yaml',
-    epochs=50,        
+    data='dataset/data.yaml',
+    epochs=50,
     imgsz=640,
     batch=16,
     name='franka_grasp_v1',
-    project='../runs/detect' # Salva na pasta runs fora de training
+    project='../runs/detect'
 )
 
-print("✅ Treino concluído! Pesos salvos em runs/detect/franka_grasp_v1/weights/best.pt")
+print("✅ Training completed! Weights saved at runs/detect/franka_grasp_v1/weights/best.pt")
