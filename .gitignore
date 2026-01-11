@@ -1,7 +1,6 @@
 photos/*
 .gitignore
 .venv/*
-*.pt
 dataset/*
 dataset_final/*
 photos/*
@@ -10,3 +9,8 @@ dataset/*
 dataset_final/*
 *.mjb
 *.mjd
+MUJOCO_LOG.TXT
+dataset_v2
+training/dataset/train
+training/dataset/valid
+runs
