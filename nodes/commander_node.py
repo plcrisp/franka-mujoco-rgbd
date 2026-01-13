@@ -2,213 +2,253 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
+
 from geometry_msgs.msg import Pose, PoseStamped
 from moveit_msgs.action import MoveGroup
-from moveit_msgs.msg import Constraints, JointConstraint, PositionConstraint, OrientationConstraint, CollisionObject
+from moveit_msgs.srv import GetPlanningScene
+from moveit_msgs.msg import (
+    Constraints, JointConstraint,
+    PositionConstraint, OrientationConstraint,
+    CollisionObject, PlanningSceneComponents
+)
 from shape_msgs.msg import SolidPrimitive
+
 import threading
 import time
-from scipy.spatial.transform import Rotation as R  # Adicionado para logar graus
+
 
 class MoveItCommander(Node):
     def __init__(self):
         super().__init__('commander_node')
+
         self._action_client = ActionClient(self, MoveGroup, 'move_action')
         self._scene_pub = self.create_publisher(CollisionObject, '/collision_object', 10)
+        self.scene_client = self.create_client(GetPlanningScene, '/get_planning_scene')
+
         self.create_subscription(PoseStamped, '/grasp_pose', self.grasp_callback, 10)
-        
+
         self.latest_grasp = None
         self.grasp_time = 0.0
-        self.get_logger().info("Commander pronto (MODO DEBUG: Só aproximação).")
+
+        self.get_logger().info("Commander ready (DEBUG mode)")
 
     def grasp_callback(self, msg):
         self.latest_grasp = msg.pose
         self.grasp_time = time.time()
-        # Log imediato quando recebe
-        self.get_logger().info("Grasp recebido e armazenado na memória.")
+        self.get_logger().info("Grasp received")
+
+    def wait_for_object(self, object_name, timeout=2.0):
+        """Checks if MoveIt knows about the object."""
+        req = GetPlanningScene.Request()
+        req.components.components = PlanningSceneComponents.WORLD_OBJECT_NAMES
+        
+        start = time.time()
+        while (time.time() - start) < timeout:
+            if not self.scene_client.service_is_ready():
+                time.sleep(0.1)
+                continue
+                
+            future = self.scene_client.call_async(req)
+            # Wait briefly for result
+            rclpy.spin_until_future_complete(self, future, timeout_sec=0.5)
+            
+            if future.result():
+                if object_name in [co.id for co in future.result().scene.world.collision_objects]:
+                    return True
+            time.sleep(0.2)
+        return False
 
     def add_scene_objects(self):
-        self.get_logger().info("Syncing planning scene")
+        self.get_logger().info("Loading planning scene...")
+        objects_to_add = []
+
+        # 1. Table
         table = CollisionObject()
-        table.header.frame_id = "panda_link0"
-        table.id = "table"
-        box = SolidPrimitive(type=SolidPrimitive.BOX, dimensions=[1.0, 1.5, 0.04])
-        table_pose = Pose()
-        table_pose.position.x = 0.3; table_pose.position.y = 0.0; table_pose.position.z = -0.02
-        table.primitives.append(box); table.primitive_poses.append(table_pose); table.operation = CollisionObject.ADD
-
-        # Mug
-        mug = CollisionObject()
-        mug.header.frame_id = "panda_link0"
-        mug.id = "mug"
-        mbox = SolidPrimitive(type=SolidPrimitive.CYLINDER, dimensions=[0.12, 0.05])
-        mpose = Pose()
-        mpose.position.x = 0.3
-        mpose.position.y = 0.2
-        mpose.position.z = 0.06
-        mug.primitives.append(mbox)
-        mug.primitive_poses.append(mpose)
-        mug.operation = CollisionObject.ADD
-
-        # Bottle
-        bottle = CollisionObject()
-        bottle.header.frame_id = "panda_link0"
-        bottle.id = "bottle"
-        bbox = SolidPrimitive(type=SolidPrimitive.CYLINDER, dimensions=[0.15, 0.03])
-        bpose = Pose()
-        bpose.position.x = 0.3
-        bpose.position.y = -0.2
-        bpose.position.z = 0.075
-        bottle.primitives.append(bbox)
-        bottle.primitive_poses.append(bpose)
-        bottle.operation = CollisionObject.ADD
-
-        # Hammer
-        hammer = CollisionObject()
-        hammer.header.frame_id = "panda_link0"
-        hammer.id = "hammer"
-        hbox = SolidPrimitive(type=SolidPrimitive.BOX, dimensions=[0.15, 0.05, 0.03])
-        hpose = Pose()
-        hpose.position.x = 0.5
-        hpose.position.y = 0.0
-        hpose.position.z = 0.015
-        hammer.primitives.append(hbox)
-        hammer.primitive_poses.append(hpose)
-        hammer.operation = CollisionObject.ADD
-
+        table.header.frame_id = "panda_link0"; table.id = "table"
+        table.primitives.append(SolidPrimitive(type=SolidPrimitive.BOX, dimensions=[1.0, 1.5, 0.04]))
         
-        for _ in range(5):
-            self._scene_pub.publish(table)
-            self._scene_pub.publish(mug)
-            self._scene_pub.publish(bottle)
-            self._scene_pub.publish(hammer)
+        p_table = Pose()
+        p_table.position.x = 0.3; p_table.position.z = -0.02
+        table.primitive_poses.append(p_table)
+        
+        table.operation = CollisionObject.ADD
+        objects_to_add.append(table)
 
-            time.sleep(0.1)
-        print("Scene loaded")
+        # 2. Mug
+        mug = CollisionObject()
+        mug.header.frame_id = "panda_link0"; mug.id = "mug"
+        mug.primitives.append(SolidPrimitive(type=SolidPrimitive.CYLINDER, dimensions=[0.12, 0.05]))
+        
+        p_mug = Pose()
+        p_mug.position.x = 0.3; p_mug.position.y = 0.2; p_mug.position.z = 0.06
+        mug.primitive_poses.append(p_mug)
+        
+        mug.operation = CollisionObject.ADD
+        objects_to_add.append(mug)
+
+        # 3. Bottle
+        bottle = CollisionObject()
+        bottle.header.frame_id = "panda_link0"; bottle.id = "bottle"
+        bottle.primitives.append(SolidPrimitive(type=SolidPrimitive.CYLINDER, dimensions=[0.15, 0.03]))
+        
+        p_bottle = Pose()
+        p_bottle.position.x = 0.3; p_bottle.position.y = -0.2; p_bottle.position.z = 0.075
+        bottle.primitive_poses.append(p_bottle)
+        
+        bottle.operation = CollisionObject.ADD
+        objects_to_add.append(bottle)
+
+        # 4. Hammer
+        hammer = CollisionObject()
+        hammer.header.frame_id = "panda_link0"; hammer.id = "hammer"
+        hammer.primitives.append(SolidPrimitive(type=SolidPrimitive.BOX, dimensions=[0.15, 0.05, 0.03]))
+        
+        p_hammer = Pose()
+        p_hammer.position.x = 0.5; p_hammer.position.z = 0.015
+        hammer.primitive_poses.append(p_hammer)
+        
+        hammer.operation = CollisionObject.ADD
+        objects_to_add.append(hammer)
+
+        # Publish and Verify
+        for obj in objects_to_add:
+            self._scene_pub.publish(obj)
+            if self.wait_for_object(obj.id):
+                self.get_logger().info(f"Synced: {obj.id}")
+            else:
+                self.get_logger().warn(f"Retry syncing: {obj.id}")
+                self._scene_pub.publish(obj) # Retry once
 
     def close_gripper(self):
-        print(">>> Fechando a garra...")
-        goal_msg = MoveGroup.Goal()
-        goal_msg.request.group_name = "hand"
-        c = Constraints(); c.name = "close_hand"
+        self.get_logger().info("Closing gripper")
+        goal = MoveGroup.Goal()
+        goal.request.group_name = "hand"
+        c = Constraints(name="close_hand")
         for joint in ["panda_finger_joint1", "panda_finger_joint2"]:
-            jc = JointConstraint(); jc.joint_name = joint; jc.position = 0.01; jc.weight = 1.0
-            jc.tolerance_above = 0.01; jc.tolerance_below = 0.01; c.joint_constraints.append(jc)
-        goal_msg.request.goal_constraints.append(c)
-        self.send_moveit_goal(goal_msg)
+            c.joint_constraints.append(JointConstraint(
+                joint_name=joint, position=0.01, tolerance_above=0.01, tolerance_below=0.01, weight=1.0))
+        goal.request.goal_constraints.append(c)
+        self.send_moveit_goal(goal)
 
     def open_gripper(self):
-        print(">>> Abrindo a garra...")
-        goal_msg = MoveGroup.Goal()
-        goal_msg.request.group_name = "hand"
+        self.get_logger().info("Opening gripper")
+        goal = MoveGroup.Goal()
+        goal.request.group_name = "hand"
         c = Constraints()
         for joint in ["panda_finger_joint1", "panda_finger_joint2"]:
-            jc = JointConstraint(); jc.joint_name = joint; jc.position = 0.04; jc.weight = 1.0
-            jc.tolerance_above = 0.01; jc.tolerance_below = 0.01; c.joint_constraints.append(jc)
-        goal_msg.request.goal_constraints.append(c)
-        self.send_moveit_goal(goal_msg)
+            c.joint_constraints.append(JointConstraint(
+                joint_name=joint, position=0.04, tolerance_above=0.01, tolerance_below=0.01, weight=1.0))
+        goal.request.goal_constraints.append(c)
+        self.send_moveit_goal(goal)
 
     def execute_grasp_sequence(self):
-        if self.latest_grasp is None: 
-            print(">>> ERRO: Nada detectado.")
+        if not self.latest_grasp or (time.time() - self.grasp_time > 60.0):
+            self.get_logger().warn("No valid grasp available")
             return
 
-        # Timeout generoso de 60 segundos
-        if (time.time() - self.grasp_time) > 60.0: 
-            print(">>> ERRO: Dado velho (> 60s). Capture novamente.")
-            return
+        target = self.latest_grasp
+        pre_grasp_z = target.position.z + 0.15
 
-        target_pose = self.latest_grasp
-
-        pre_grasp_z = target_pose.position.z + 0.15
-        
-        print(f">>> [1/2] APROXIMANDO (Pre-Grasp)...")
+        self.get_logger().info("1. Approach")
         self.open_gripper()
         
-        # Vai para cima do objeto (mantendo orientação do grasp)
-        success = self.go_to_pose(
-            target_pose.position.x, 
-            target_pose.position.y, 
-            pre_grasp_z, 
-            orientation=target_pose.orientation
-        )
-        
-        if success:
-             print(">>> [2/2] INDO PARA O PEGA...")
-             # Descomente para testar a descida final
-             # self.go_to_pose(
-             #    target_pose.position.x, 
-             #    target_pose.position.y, 
-             #    target_pose.position.z, 
-             #    orientation=target_pose.orientation
-             # )
-        
-    def send_moveit_goal(self, goal_msg):
+        # Go to pre-grasp
+        if self.go_to_pose(target.position.x, target.position.y, pre_grasp_z, orientation=target.orientation):
+            self.get_logger().info("2. Ready for descent")
+            # To descend, uncomment:
+            # self.go_to_pose(target.position.x, target.position.y, target.position.z, orientation=target.orientation)
+
+    def send_moveit_goal(self, goal):
         self._action_client.wait_for_server()
-        future = self._action_client.send_goal_async(goal_msg)
+        future = self._action_client.send_goal_async(goal)
         while not future.done(): time.sleep(0.1)
         res = future.result().get_result_async()
         while not res.done(): time.sleep(0.1)
         return res.result().result.error_code.val == 1
 
     def go_to_pose(self, x, y, z, orientation=None):
-        print(f"Planejando movimento...")
+        self.get_logger().info(f"Moving to: [{x:.2f}, {y:.2f}, {z:.2f}]")
 
-        goal_msg = MoveGroup.Goal()
-        goal_msg.request.workspace_parameters.header.frame_id = "panda_link0"
-        goal_msg.request.workspace_parameters.min_corner.x = -1.0; goal_msg.request.workspace_parameters.min_corner.y = -1.0; goal_msg.request.workspace_parameters.min_corner.z = -1.0
-        goal_msg.request.workspace_parameters.max_corner.x = 1.0; goal_msg.request.workspace_parameters.max_corner.y = 1.0; goal_msg.request.workspace_parameters.max_corner.z = 1.0
-
-        goal_msg.request.start_state.is_diff = True
-        goal_msg.request.group_name = "panda_arm"
-        goal_msg.request.allowed_planning_time = 10.0 # Aumentei um pouco o tempo de planejamento
-
-        target_pose = Pose()
-        target_pose.position.x = float(x)
-        target_pose.position.y = float(y)
-        target_pose.position.z = float(z)
+        goal = MoveGroup.Goal()
+        goal.request.group_name = "panda_arm"
+        goal.request.start_state.is_diff = True
+        goal.request.allowed_planning_time = 5.0
         
-        if orientation is not None:
-            target_pose.orientation = orientation
-        else:
-            # Default
-            target_pose.orientation.x = 0.924
-            target_pose.orientation.y = -0.382
-            target_pose.orientation.z = 0.0
-            target_pose.orientation.w = 0.0
+        # Workspace bounds
+        wp = goal.request.workspace_parameters
+        wp.header.frame_id = "panda_link0"
+        wp.min_corner.x = -1.0; wp.min_corner.y = -1.0; wp.min_corner.z = -1.0
+        wp.max_corner.x = 1.0; wp.max_corner.y = 1.0; wp.max_corner.z = 1.0
 
-        c = Constraints(); c.name = "goal"
+        pose = Pose()
+        pose.position.x = float(x)
+        pose.position.y = float(y)
+        pose.position.z = float(z)
+
+        if orientation:
+            pose.orientation = orientation
+        else:
+            # CORREÇÃO: Orientação 'Neutra' do Panda.
+            # Alinha os dedos com o eixo Y e evita torção do punho.
+            pose.orientation.x = 0.9239
+            pose.orientation.y = -0.3827
+            pose.orientation.z = 0.0
+            pose.orientation.w = 0.0
+
+        c = Constraints(name="goal")
+        
+        # Position Constraint
         pc = PositionConstraint()
         pc.header.frame_id = "panda_link0"; pc.link_name = "panda_link8"
         pc.constraint_region.primitives.append(SolidPrimitive(type=SolidPrimitive.SPHERE, dimensions=[0.01]))
-        pc.constraint_region.primitive_poses.append(target_pose); pc.weight = 1.0
+        pc.constraint_region.primitive_poses.append(pose)
+        pc.weight = 1.0
         c.position_constraints.append(pc)
 
+        # Orientation Constraint
         oc = OrientationConstraint()
         oc.header.frame_id = "panda_link0"; oc.link_name = "panda_link8"
-        oc.orientation = target_pose.orientation
-        oc.absolute_x_axis_tolerance = 0.1; oc.absolute_y_axis_tolerance = 0.1; oc.absolute_z_axis_tolerance = 0.1; oc.weight = 1.0
+        oc.orientation = pose.orientation
+        oc.absolute_x_axis_tolerance = 0.1
+        oc.absolute_y_axis_tolerance = 0.1
+        oc.absolute_z_axis_tolerance = 0.1
+        oc.weight = 1.0
         c.orientation_constraints.append(oc)
 
-        goal_msg.request.goal_constraints.append(c)
-        return self.send_moveit_goal(goal_msg)
+        goal.request.goal_constraints.append(c)
+        return self.send_moveit_goal(goal)
+
 
 def main():
     rclpy.init()
     node = MoveItCommander()
-    thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True); thread.start()
-    node.add_scene_objects(); time.sleep(1)
+    threading.Thread(target=rclpy.spin, args=(node,), daemon=True).start()
+
+    node.add_scene_objects()
+    time.sleep(1)
 
     while True:
-        print("\n--- PANDA CONTROL (DEBUG MODE) ---")
-        print("1. Home")
-        print("6. >> TESTAR ROTAÇÃO E APROXIMAÇÃO <<")
-        print("0. Sair")
-        choice = input("Opção: ")
-        if choice == '0': break
-        elif choice == '1': node.go_to_pose(0.3, 0.0, 0.6); node.open_gripper()
-        elif choice == '6': node.execute_grasp_sequence()
-        else: print("Opção inválida")
-    node.destroy_node(); rclpy.shutdown()
+        print("\n--- PANDA CONTROL ---")
+        print("1. Home (Vertical)")
+        print("2. Mug (Vertical)")
+        print("3. Bottle (Vertical)")
+        print("4. Hammer (Vertical)")
+        print("5. Grasp (Vision)")
+        print("0. Exit")
 
-if __name__ == '__main__': main()
+        choice = input("Option: ")
+
+        if choice == '0': break
+        # Added height to Z to ensure safety with vertical gripper
+        elif choice == '1': node.go_to_pose(0.3, 0.0, 0.6) 
+        elif choice == '2': node.go_to_pose(0.3, 0.2, 0.45)
+        elif choice == '3': node.go_to_pose(0.3, -0.2, 0.45)
+        elif choice == '4': node.go_to_pose(0.5, 0.0, 0.45)
+        elif choice == '5': node.execute_grasp_sequence()
+        else: print("Invalid")
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
