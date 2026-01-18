@@ -5,6 +5,7 @@ import message_filters
 from sensor_msgs.msg import Image, CameraInfo, PointCloud2, PointField
 from geometry_msgs.msg import PoseStamped
 from cv_bridge import CvBridge
+import cv2
 import numpy as np
 import open3d as o3d
 import subprocess
@@ -52,16 +53,19 @@ class GraspDetector(Node):
         depth = self.bridge.imgmsg_to_cv2(depth_msg, "32FC1")
         mask = self.bridge.imgmsg_to_cv2(mask_msg, "mono8")
 
-        # 2. Filter Valid Pixels
+        # 2. Clean Mask
+        kernel = np.ones((5, 5), np.uint8) 
+        mask = cv2.erode(mask, kernel, iterations=1) # Erode to reduce noise on mask edges
+
+        # 3. Filter Valid Pixels
         valid_indices = np.where(mask > 128)
         if len(valid_indices[0]) < 50: return 
 
-        # 3. Generate Point Cloud (Camera Frame)
-        # Correction factor to align cloud with simulation scale
-        correction_factor = 0.75
+        # 4. Generate Point Cloud (Camera Frame)
 
-        fx = self.camera_info.k[0] * correction_factor
-        fy = self.camera_info.k[4] 
+        # Using empirical focal length adjustments
+        fx = self.camera_info.k[0] * 0.75
+        fy = self.camera_info.k[4] * 1.05
         cx = self.camera_info.k[2]
         cy = self.camera_info.k[5]
 
@@ -86,7 +90,7 @@ class GraspDetector(Node):
         pcd.points = o3d.utility.Vector3dVector(points)
         o3d.io.write_point_cloud(TEMP_PCD_PATH, pcd, write_ascii=True)
 
-        # 4. Run GPD Binary
+        # 5. Run GPD Binary
         cmd = [GPD_PATH, CFG_PATH, TEMP_PCD_PATH]
         try:
             result = subprocess.run(cmd, capture_output=True, text=True)
