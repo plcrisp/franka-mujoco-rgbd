@@ -58,10 +58,10 @@ class GraspDetector(Node):
 
         # 3. Generate Point Cloud (Camera Frame)
         # Correction factor to align cloud with simulation scale
-        correction_factor = 0.86
+        correction_factor = 0.75
 
         fx = self.camera_info.k[0] * correction_factor
-        fy = self.camera_info.k[4] * correction_factor
+        fy = self.camera_info.k[4] 
         cx = self.camera_info.k[2]
         cy = self.camera_info.k[5]
 

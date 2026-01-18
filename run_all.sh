@@ -30,9 +30,9 @@ gnome-terminal --tab --title="Commander" -- bash -c \
 # Publish static transform between robot hand and camera frame
 gnome-terminal --tab --title="TF Camera" -- bash -c \
 "ros2 run tf2_ros static_transform_publisher \
- --x 0.07 --y 0.0 --z 0.02 \
- --roll 0 --pitch 0 --yaw 1.5707 \
- --frame-id panda_hand \
+ --x 0.060 --y -0.018 --z 0.160 \
+ --roll 0 --pitch 0 --yaw 0.785 \
+ --frame-id panda_link7 \
  --child-frame-id camera_optical_frame; exec bash"
 
 # Final status message
