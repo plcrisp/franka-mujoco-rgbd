@@ -74,42 +74,6 @@ class MoveItCommander(Node):
         table.operation = CollisionObject.ADD
         objects_to_add.append(table)
 
-        # 2. Mug
-        mug = CollisionObject()
-        mug.header.frame_id = "panda_link0"; mug.id = "mug"
-        mug.primitives.append(SolidPrimitive(type=SolidPrimitive.CYLINDER, dimensions=[0.12, 0.05]))
-        
-        p_mug = Pose()
-        p_mug.position.x = 0.3; p_mug.position.y = 0.2; p_mug.position.z = 0.06
-        mug.primitive_poses.append(p_mug)
-        
-        mug.operation = CollisionObject.ADD
-        objects_to_add.append(mug)
-
-        # 3. Bottle
-        bottle = CollisionObject()
-        bottle.header.frame_id = "panda_link0"; bottle.id = "bottle"
-        bottle.primitives.append(SolidPrimitive(type=SolidPrimitive.CYLINDER, dimensions=[0.15, 0.03]))
-        
-        p_bottle = Pose()
-        p_bottle.position.x = 0.3; p_bottle.position.y = -0.2; p_bottle.position.z = 0.075
-        bottle.primitive_poses.append(p_bottle)
-        
-        bottle.operation = CollisionObject.ADD
-        objects_to_add.append(bottle)
-
-        # 4. Hammer
-        hammer = CollisionObject()
-        hammer.header.frame_id = "panda_link0"; hammer.id = "hammer"
-        hammer.primitives.append(SolidPrimitive(type=SolidPrimitive.BOX, dimensions=[0.15, 0.05, 0.03]))
-        
-        p_hammer = Pose()
-        p_hammer.position.x = 0.5; p_hammer.position.z = 0.015
-        hammer.primitive_poses.append(p_hammer)
-        
-        hammer.operation = CollisionObject.ADD
-        objects_to_add.append(hammer)
-
         # Publish and Verify
         for obj in objects_to_add:
             self._scene_pub.publish(obj)
