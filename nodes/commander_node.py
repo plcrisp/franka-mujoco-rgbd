@@ -24,13 +24,10 @@ class MoveItCommander(Node):
         super().__init__('commander_node')
 
         # --- MOVEIT CLIENTS ---
-        # Cliente para planejamento geral (PTP)
         self._action_client = ActionClient(self, MoveGroup, 'move_action')
         
-        # [NOVO] Cliente para executar trajetórias calculadas previamente
         self._execute_client = ActionClient(self, ExecuteTrajectory, 'execute_trajectory')
         
-        # [NOVO] Serviço para calcular linha reta (Cartesian Path)
         self._cartesian_srv = self.create_client(GetCartesianPath, 'compute_cartesian_path')
 
         self._scene_pub = self.create_publisher(CollisionObject, '/collision_object', 10)
@@ -79,7 +76,6 @@ class MoveItCommander(Node):
                 time.sleep(0.1)
                 continue
             future = self.scene_client.call_async(req)
-            # Como estamos em thread separada no main, podemos esperar com loops curtos
             while not future.done():
                 time.sleep(0.05)
             
@@ -116,21 +112,19 @@ class MoveItCommander(Node):
 
     # --- GRIPPER CONTROL ---
     def close_gripper(self):
-        self.get_logger().info("Closing gripper")
         goal = MoveGroup.Goal()
         goal.request.group_name = "hand"
         c = Constraints(name="close_hand")
         for joint in ["panda_finger_joint1", "panda_finger_joint2"]:
             c.joint_constraints.append(
                 JointConstraint(
-                    joint_name=joint, position=0.00, tolerance_above=0.01, tolerance_below=0.01, weight=1.0
+                    joint_name=joint, position=0.05, tolerance_above=0.01, tolerance_below=0.01, weight=1.0
                 )
             )
         goal.request.goal_constraints.append(c)
         self.send_moveit_goal(goal)
 
     def open_gripper(self):
-        self.get_logger().info("Opening gripper")
         goal = MoveGroup.Goal()
         goal.request.group_name = "hand"
         c = Constraints()
@@ -155,9 +149,7 @@ class MoveItCommander(Node):
             
         return res_future.result().result.error_code.val == 1
 
-    # --- MOVIMENTOS PADRÃO (PTP - Point to Point) ---
     def go_to_pose(self, x, y, z, orientation=None):
-        """ Movimento livre (pode fazer curva) """
         self.get_logger().info(f"Moving to [{x:.2f}, {y:.2f}, {z:.2f}] (Free)")
 
         goal = MoveGroup.Goal()
@@ -206,26 +198,20 @@ class MoveItCommander(Node):
         goal.request.goal_constraints.append(c)
         return self.send_moveit_goal(goal)
 
-    # --- MOVIMENTOS LINEARES (CARTESIANO) ---
     def go_to_pose_cartesian(self, target_pose):
-        """ Movimento em linha reta estrita usando compute_cartesian_path """
         self.get_logger().info("Planning Cartesian path (Straight Line)...")
 
-        # 1. Preparar requisição do serviço
         req = GetCartesianPath.Request()
         req.header.frame_id = "panda_link0"
         req.group_name = "panda_arm"
         req.link_name = "panda_link8"
         
-        # Waypoints: Lista de poses para passar (no caso, só o destino)
         req.waypoints = [target_pose]
         
-        # Parâmetros críticos para a linha reta
-        req.max_step = 0.01       # Resolução de 1cm
-        req.jump_threshold = 0.0  # Desabilita verificação de salto (ou use valor baixo tipo 1.5)
+        req.max_step = 0.01       
+        req.jump_threshold = 0.0 
         req.avoid_collisions = True
 
-        # 2. Chamar serviço
         if not self._cartesian_srv.wait_for_service(timeout_sec=2.0):
             self.get_logger().error("Cartesian service not available")
             return False
@@ -236,14 +222,12 @@ class MoveItCommander(Node):
         
         result = future.result()
         
-        # Verifica se o planeamento foi bem sucedido (fraction 1.0 = 100% do caminho)
         if result.fraction < 0.90:
             self.get_logger().warn(f"Cartesian path incomplete! Fraction: {result.fraction}")
             return False
 
         self.get_logger().info(f"Cartesian path computed ({len(result.solution.joint_trajectory.points)} points). Executing...")
 
-        # 3. Executar a trajetória calculada
         goal = ExecuteTrajectory.Goal()
         goal.trajectory = result.solution
         
@@ -274,17 +258,11 @@ class MoveItCommander(Node):
 
         target = self.latest_grasp
         
-        # --- DEFINIÇÃO DE ALTURAS (Ajuste conforme necessário) ---
-        # Z do Objeto + Offset de segurança para chegar por cima
-        pre_grasp_z = target.position.z + 0.25 
+        pre_grasp_z = target.position.z + 0.35 
         
-        # Z FINAL da pega (Onde o gripper deve estar para fechar).
-        # CUIDADO: link8 (punho) tem ~10cm até a ponta dos dedos.
-        # Se o objeto tem 10cm de altura, target.z pode ser o centro ou a base.
-        # Ajuste esse valor "0.13" testando na prática para não bater na mesa.
         grasp_height_z = target.position.z + 0.13          
 
-        # --- 2. PRE-GRASP (Movimento Rápido/Livre) ---
+        # --- 1. PRE-GRASP ---
         self.get_logger().info("1. Moving to PRE-GRASP (Air)")
         success = self.go_to_pose(
             target.position.x,
@@ -296,13 +274,13 @@ class MoveItCommander(Node):
             self.get_logger().error("Pre-grasp failed")
             return
         
+        # --- 2. OPEN GRIPPER ---
         self.get_logger().info("2. Opening gripper...")
         self.open_gripper()
         
-        # Pequena pausa para estabilizar o balanço do braço antes de descer reto
         time.sleep(3.0)
 
-        # --- 3. DESCIDA (Movimento Cartesiano Lento) ---
+        # --- 3. DESCENT (Linear Cartesian Movement) ---
         self.get_logger().info("3. Descending to GRASP pose (Linear)")
         
         grasp_pose = Pose()
@@ -311,30 +289,25 @@ class MoveItCommander(Node):
         grasp_pose.position.z = grasp_height_z 
         grasp_pose.orientation = target.orientation
 
-        # Usa o método cartesiano (linha reta)
         if not self.go_to_pose_cartesian(grasp_pose):
             self.get_logger().error("Descent failed / Path obstructed")
-            # Opcional: Abortar ou voltar pro home
             return
 
-        # Pausa crítica: garante que parou exatamente no lugar
         time.sleep(0.5)
 
-        # --- 4. FECHAR GRIPPER ---
+        # --- 4. CLOSE GRIPPER ---
         self.get_logger().info("4. Closing gripper...")
         self.close_gripper()
         
-        # [CORREÇÃO] Espera FUNDAMENTAL para garantir força de atrito
-        # Se subir antes disso, o objeto escorrega.
         time.sleep(3.0) 
 
-        # --- 5. LIFT (Subida Cartesiana) ---
+
+        # --- 5. LIFT (Linear Cartesian Movement) ---
         self.get_logger().info("5. Lifting object (Linear)")
         
         lift_pose = Pose()
         lift_pose.position.x = target.position.x
         lift_pose.position.y = target.position.y
-        # Sobe bem alto para garantir clearance
         lift_pose.position.z = target.position.z + 0.40 
         lift_pose.orientation = target.orientation
         
