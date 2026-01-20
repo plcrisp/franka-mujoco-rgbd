@@ -48,6 +48,7 @@ class SimulationNode(Node):
         self.mujoco_joint_ids = []
         self.ros_finger_names = ["panda_finger_joint1", "panda_finger_joint2"]
         self.mujoco_finger_ids = []
+        self.current_gripper_val = 0.0
 
         self._map_joints()
 
@@ -71,15 +72,18 @@ class SimulationNode(Node):
                 jid = mujoco.mj_name2id(self.m, mujoco.mjtObj.mjOBJ_JOINT, f"joint{i+1}")
             self.mujoco_joint_ids.append(jid)
 
-        for name in self.ros_finger_names:
+        self.gripper_actuator_id = mujoco.mj_name2id(self.m, mujoco.mjtObj.mjOBJ_ACTUATOR, "actuator8")
+        
+        # Mapeia os joints físicos (apenas para "teleporte" visual se necessário)
+        self.mujoco_finger_ids = []
+        for name in ["finger_joint1", "finger_joint2"]:
             jid = mujoco.mj_name2id(self.m, mujoco.mjtObj.mjOBJ_JOINT, name)
-            if jid == -1:
-                jid = mujoco.mj_name2id(
-                    self.m,
-                    mujoco.mjtObj.mjOBJ_JOINT,
-                    "finger1" if "1" in name else "finger2"
-                )
             self.mujoco_finger_ids.append(jid)
+
+        if self.gripper_actuator_id == -1:
+            self.get_logger().error("ERRO: Não achei 'actuator8' no XML!")
+        else:
+            self.get_logger().info(f"Gripper Actuator encontrado: ID {self.gripper_actuator_id}")
 
     def _setup_camera_intrinsics(self):
         cam_id = mujoco.mj_name2id(self.m, mujoco.mjtObj.mjOBJ_CAMERA, CAM_NAME)
@@ -116,10 +120,27 @@ class SimulationNode(Node):
                     if jid != -1:
                         self.d.qpos[self.m.jnt_qposadr[jid]] = self.target_arm_qpos[i]
 
-                for i, jid in enumerate(self.mujoco_finger_ids):
-                    if jid != -1:
-                        self.d.qpos[self.m.jnt_qposadr[jid]] = self.target_finger_qpos[i]
+                ros_target = self.target_finger_qpos[0] 
 
+                # 2. Convertemos para a escala do MuJoCo (0 a 255)
+                # Nota: 0.04m -> 255 (Aberto), 0.0m -> 0 (Fechado)
+                target_mujoco = (ros_target / 0.04) * 255.0
+                target_mujoco = max(0.0, min(255.0, target_mujoco))
+
+                # 3. SUAVIZAÇÃO (A mágica acontece aqui)
+                # alpha controla a velocidade: 0.01 (muito lento) a 1.0 (instantâneo)
+                alpha = 0.15 
+                
+                # Movemos o valor atual um pouquinho em direção ao alvo
+                self.current_gripper_val += alpha * (target_mujoco - self.current_gripper_val)
+
+                # 4. Aplica o valor SUAVE no motor
+                if self.gripper_actuator_id != -1:
+                    self.d.ctrl[self.gripper_actuator_id] = self.current_gripper_val
+
+                # 5. (Opcional) Atualiza o qpos visual também suavemente, 
+                # mas o ideal é deixar a física do d.ctrl empurrar os dedos.
+                
                 mujoco.mj_step(self.m, self.d)
                 viewer.sync()
 
