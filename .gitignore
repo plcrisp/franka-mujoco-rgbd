@@ -3,7 +3,6 @@ photos/*
 .venv/*
 dataset/*
 dataset_final/*
-photos/*
 runs/*
 dataset/*
 dataset_final/*
