@@ -13,3 +13,4 @@ dataset_v2
 training/dataset/train
 training/dataset/valid
 runs
+gen_training_data.py
