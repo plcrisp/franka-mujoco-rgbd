@@ -1,4 +1,6 @@
 mujoco>=3.0.0
-opencv-python
 numpy<2
+opencv-python
 ultralytics
+open3d
+scipy
