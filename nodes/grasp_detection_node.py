@@ -14,11 +14,14 @@ import tf2_geometry_msgs
 from scipy.spatial.transform import Rotation as R
 import time
 from std_msgs.msg import Empty
+from pathlib import Path
 
 # --- CONFIG ---
-GPD_PATH = "/home/pedro/gpd/build/detect_grasps"
-CFG_PATH = "/home/pedro/gpd/cfg/ros_eigen_params.cfg"
-TEMP_PCD_PATH = "/tmp/temp_grasp.pcd"
+HOME = Path.home()
+
+GPD_PATH = HOME / "gpd" / "build" / "detect_grasps"
+CFG_PATH = HOME / "gpd" / "cfg" / "ros_eigen_params.cfg"
+TEMP_PCD_PATH = Path("/tmp/temp_grasp.pcd")
 
 # Performance
 VOXEL_SIZE = 0.005  # 5 mm
