@@ -342,7 +342,6 @@ def user_interface(node):
                 print("\n[SEARCH] Select object:")
                 print("1. mug")
                 print("2. bottle")
-                print("3. hammer")
                 print("0. back")
 
                 choice = input(">> Option: ").strip()
@@ -353,8 +352,6 @@ def user_interface(node):
                     obj_name = "mug"
                 elif choice == '2':
                     obj_name = "bottle"
-                elif choice == '3':
-                    obj_name = "hammer"
                 else:
                     print("[ERROR] Invalid option")
                     continue

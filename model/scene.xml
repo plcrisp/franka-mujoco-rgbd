@@ -3,7 +3,6 @@
   <include file="panda/panda.xml"/>
   <include file="objects/waterbottle/waterbottle.xml"/>
   <include file="objects/mug/mug.xml"/>
-  <include file="objects/hammer/hammer.xml"/>
 
   <statistic center="0.3 0 0.4" extent="1"/>
 
