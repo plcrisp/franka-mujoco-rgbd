@@ -199,7 +199,6 @@ class MoveItCommander(Node):
         return self.send_moveit_goal(goal)
 
     def go_to_pose_cartesian(self, target_pose):
-        self.get_logger().info("Planning Cartesian path (Straight Line)...")
 
         req = GetCartesianPath.Request()
         req.header.frame_id = "panda_link0"
@@ -226,8 +225,6 @@ class MoveItCommander(Node):
             self.get_logger().warn(f"Cartesian path incomplete! Fraction: {result.fraction}")
             return False
 
-        self.get_logger().info(f"Cartesian path computed ({len(result.solution.joint_trajectory.points)} points). Executing...")
-
         goal = ExecuteTrajectory.Goal()
         goal.trajectory = result.solution
         
@@ -243,7 +240,6 @@ class MoveItCommander(Node):
             
         final_res = exe_result_future.result()
         if final_res.result.error_code.val == 1:
-            self.get_logger().info("Cartesian move SUCCESS")
             return True
         else:
             self.get_logger().error(f"Cartesian move FAILED: {final_res.result.error_code.val}")

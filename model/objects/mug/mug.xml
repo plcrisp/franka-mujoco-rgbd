@@ -32,6 +32,8 @@
                   group="1"
                   density="0"/>
 
+            <inertial pos="0 0 0.05" mass="0.25" diaginertia="0.001 0.001 0.001"/>
+
             <geom name="m_colision_c0"  type="mesh" mesh="m_contact0_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
             <geom name="m_colision_c1"  type="mesh" mesh="m_contact1_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>
             <geom name="m_colision_c2"  type="mesh" mesh="m_contact2_mesh"  rgba="0 0 0 0" condim="3" friction="1 0.005 0.0001"/>

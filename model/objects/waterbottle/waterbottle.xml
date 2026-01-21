@@ -11,6 +11,8 @@
     <body name="bottle" pos="0.5 -0.2 0.8"> 
       <freejoint/> <geom name="bottle_visual" type="mesh" mesh="waterbottle_mesh" 
             rgba="0.1 0.8 0.2 1" contype="0" conaffinity="0" group="1" density="0"/>
+      
+      <inertial pos="0 0 0.1" mass="0.5" diaginertia="0.002 0.002 0.002"/>
 
       <geom name="visual_tampa" type="cylinder" size=".013 .0055" pos="0 0 0.063" 
             rgba="0.9 0.8 0.1 1" mass="0.01"/>

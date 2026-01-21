@@ -81,7 +81,7 @@ class ObjectSegmentationNode(Node):
         results = self.model(
             cv_image,
             verbose=False,
-            conf=0.60,
+            conf=0.75,
             retina_masks=True
         )
         result = results[0]
