@@ -1,6 +1,6 @@
 <mujoco model="panda">
 
-  <option integrator="implicitfast"/>
+  <option integrator="implicit"/>
 
   <default>
     <default class="panda">
@@ -15,21 +15,21 @@
         <geom type="mesh" contype="0" conaffinity="0" group="2"/>
       </default>
       <default class="collision">
-        <geom type="mesh" group="3"/>
+        <geom type="mesh" group="3" contype="1" conaffinity="1"/>
         <default class="fingertip_pad_collision_1">
-          <geom type="box" size="0.0085 0.004 0.0085" pos="0 0.0055 0.0445"/>
+          <geom type="box" size="0.0085 0.004 0.0085" pos="0 0.0055 0.0445" contype="1" conaffinity="1"/>
         </default>
         <default class="fingertip_pad_collision_2">
-          <geom type="box" size="0.003 0.002 0.003" pos="0.0055 0.002 0.05"/>
+          <geom type="box" size="0.003 0.002 0.003" pos="0.0055 0.002 0.05" contype="1" conaffinity="1"/>
         </default>
         <default class="fingertip_pad_collision_3">
-          <geom type="box" size="0.003 0.002 0.003" pos="-0.0055 0.002 0.05"/>
+          <geom type="box" size="0.003 0.002 0.003" pos="-0.0055 0.002 0.05" contype="1" conaffinity="1"/>
         </default>
         <default class="fingertip_pad_collision_4">
-          <geom type="box" size="0.003 0.002 0.0035" pos="0.0055 0.002 0.0395"/>
+          <geom type="box" size="0.003 0.002 0.0035" pos="0.0055 0.002 0.0395" contype="1" conaffinity="1"/>
         </default>
         <default class="fingertip_pad_collision_5">
-          <geom type="box" size="0.003 0.002 0.0035" pos="-0.0055 0.002 0.0395"/>
+          <geom type="box" size="0.003 0.002 0.0035" pos="-0.0055 0.002 0.0395" contype="1" conaffinity="1"/>
         </default>
       </default>
     </default>
@@ -256,26 +256,26 @@
 
                       <body name="left_finger" pos="0 0 0.0584">
                         <inertial mass="0.015" pos="0 0 0" diaginertia="2.375e-6 2.375e-6 7.5e-7"/>
-                        <joint name="finger_joint1" class="finger" damping="10"/>
+                        <joint name="finger_joint1" class="finger" damping="3"/>
                         <geom mesh="finger_0" material="off_white" class="visual"/>
                         <geom mesh="finger_1" material="black" class="visual"/>
                         <geom mesh="finger_0" class="collision"/>
-                        <geom class="fingertip_pad_collision_1" solref="0.01 1" solimp="0.9 0.95 0.001 0.5 2"/>
-                        <geom class="fingertip_pad_collision_2" solref="0.01 1" solimp="0.9 0.95 0.001 0.5 2"/>
-                        <geom class="fingertip_pad_collision_3" solref="0.01 1" solimp="0.9 0.95 0.001 0.5 2"/>
-                        <geom name="left_finger_pad" class="fingertip_pad_collision_4" solref="0.01 1" solimp="0.9 0.95 0.001 0.5 2"/>
+                        <geom class="fingertip_pad_collision_1" solref="0.01 1" solimp="0.95 0.99 0.002"/>
+                        <geom class="fingertip_pad_collision_2" solref="0.01 1" solimp="0.95 0.99 0.002"/>
+                        <geom class="fingertip_pad_collision_3" solref="0.01 1" solimp="0.95 0.99 0.002"/>
+                        <geom name="left_finger_pad" class="fingertip_pad_collision_4" solref="0.01 1" solimp="0.95 0.99 0.002" friction="1.5 0.02 0.001"/>
                       </body>
 
                       <body name="right_finger" pos="0 0 0.0584" quat="0 0 0 1">
                         <inertial mass="0.015" pos="0 0 0" diaginertia="2.375e-6 2.375e-6 7.5e-7"/>
-                        <joint name="finger_joint2" class="finger" damping="10"/>
+                        <joint name="finger_joint2" class="finger" damping="3"/>
                         <geom mesh="finger_0" material="off_white" class="visual"/>
                         <geom mesh="finger_1" material="black" class="visual"/>
                         <geom mesh="finger_0" class="collision"/>
-                        <geom class="fingertip_pad_collision_1" solref="0.01 1" solimp="0.9 0.95 0.001 0.5 2"/>
-                        <geom class="fingertip_pad_collision_2" solref="0.01 1" solimp="0.9 0.95 0.001 0.5 2"/>
-                        <geom class="fingertip_pad_collision_3" solref="0.01 1" solimp="0.9 0.95 0.001 0.5 2"/>
-                        <geom name="right_finger_pad" class="fingertip_pad_collision_4" solref="0.01 1" solimp="0.9 0.95 0.001 0.5 2"/>
+                        <geom class="fingertip_pad_collision_1" solref="0.01 1" solimp="0.95 0.99 0.002"/>
+                        <geom class="fingertip_pad_collision_2" solref="0.01 1" solimp="0.95 0.99 0.002"/>
+                        <geom class="fingertip_pad_collision_3" solref="0.01 1" solimp="0.95 0.99 0.002"/>
+                        <geom name="right_finger_pad" class="fingertip_pad_collision_4" solref="0.01 1" solimp="0.95 0.99 0.002" friction="1.5 0.02 0.001"/>
                       
                       </body>
 
@@ -303,19 +303,52 @@
   </equality>
 
   <actuator>
-    <general class="panda" name="actuator1" joint="joint1" gainprm="4500" biasprm="0 -4500 -450"/>
-    <general class="panda" name="actuator2" joint="joint2" gainprm="4500" biasprm="0 -4500 -450"
-      ctrlrange="-1.7628 1.7628"/>
-    <general class="panda" name="actuator3" joint="joint3" gainprm="3500" biasprm="0 -3500 -350"/>
-    <general class="panda" name="actuator4" joint="joint4" gainprm="3500" biasprm="0 -3500 -350"
-      ctrlrange="-3.0718 -0.0698"/>
-    <general class="panda" name="actuator5" joint="joint5" gainprm="2000" biasprm="0 -2000 -200" forcerange="-12 12"/>
-    <general class="panda" name="actuator6" joint="joint6" gainprm="2000" biasprm="0 -2000 -200" forcerange="-12 12"
-      ctrlrange="-0.0175 3.7525"/>
-    <general class="panda" name="actuator7" joint="joint7" gainprm="2000" biasprm="0 -2000 -200" forcerange="-12 12"/>
-    <!-- Remap original ctrlrange (0, 0.04) to (0, 255): 0.04 * 100 / 255 = 0.01568627451 -->
-    <general class="panda" name="actuator8" tendon="split" forcerange="-100 100" ctrlrange="0 255"
-      gainprm="0.01568627451 0 0" biasprm="0 -100 -10"/>
+    <general class="panda" joint="joint1"
+            gainprm="2000"
+            biasprm="0 -2000 -200"
+            forcerange="-60 60"/>
+
+    <general class="panda" joint="joint2"
+            gainprm="2000"
+            biasprm="0 -2000 -200"
+            forcerange="-60 60"
+            ctrlrange="-1.7 1.7"/>
+
+    <general class="panda" joint="joint3"
+            gainprm="1500"
+            biasprm="0 -1500 -150"
+            forcerange="-50 50"/>
+
+    <general class="panda" joint="joint4"
+            gainprm="1500"
+            biasprm="0 -1500 -150"
+            forcerange="-50 50"
+            ctrlrange="-3.0 -0.1"/>
+
+    <general class="panda" joint="joint5"
+            gainprm="800"
+            biasprm="0 -800 -80"
+            forcerange="-20 20"/>
+
+    <general class="panda" joint="joint6"
+            gainprm="800"
+            biasprm="0 -800 -80"
+            forcerange="-20 20"
+            ctrlrange="-0.01 3.7"/>
+
+    <general class="panda" joint="joint7"
+            gainprm="800"
+            biasprm="0 -800 -80"
+            forcerange="-20 20"/>
+
+    <!-- Gripper -->
+    <general name="gripper_act"
+         tendon="split"
+         gainprm="0.015686"
+         biasprm="0 -120 -12"
+         forcerange="-120 120"
+         ctrlrange="0 255"/>
   </actuator>
+
 
 </mujoco>

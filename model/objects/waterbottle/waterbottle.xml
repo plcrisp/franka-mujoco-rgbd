@@ -1,9 +1,9 @@
 <mujoco model="panda scene">
 
   <asset>
-    <mesh name="waterbottle_mesh" file="objects/waterbottle/meshes/waterbottle.stl" scale="1 1 1"/>
-    <mesh name="wb_contact0_mesh"    file="objects/waterbottle/meshes/contact0.stl"    scale="1 1 1"/>
-    <mesh name="wb_contact1_mesh"    file="objects/waterbottle/meshes/contact1.stl"    scale="1 1 1"/>
+    <mesh name="waterbottle_mesh" file="objects/waterbottle/meshes/waterbottle.stl" scale="0.85 0.85 0.85"/>
+    <mesh name="wb_contact0_mesh"    file="objects/waterbottle/meshes/contact0.stl"    scale="0.85 0.85 0.85"/>
+    <mesh name="wb_contact1_mesh"    file="objects/waterbottle/meshes/contact1.stl"    scale="0.85 0.85 0.85"/>
   </asset>
 
   <worldbody>
