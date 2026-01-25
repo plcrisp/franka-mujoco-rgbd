@@ -28,7 +28,7 @@ VOXEL_SIZE = 0.005  # 5 mm
 
 # Top-down filter
 # Closer to 1.0 means more vertical
-MIN_VERTICAL_ALIGNMENT = 0.8
+MIN_VERTICAL_ALIGNMENT = 1
 
 
 class GraspDetector(Node):
