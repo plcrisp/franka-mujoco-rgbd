@@ -13,9 +13,18 @@ from moveit_msgs.msg import (
 )
 from shape_msgs.msg import SolidPrimitive
 from std_msgs.msg import String, Empty
+from geometry_msgs.msg import Quaternion
 
 import threading
 import time
+
+
+# top-down
+top_down_orientation = Quaternion()
+top_down_orientation.x = 1.0
+top_down_orientation.y = 0.0
+top_down_orientation.z = 0.0
+top_down_orientation.w = 0.0
 
 
 class MoveItCommander(Node):
@@ -128,20 +137,18 @@ class MoveItCommander(Node):
         goal.request.goal_constraints.append(c)
         self.send_moveit_goal(goal)
 
-    def open_gripper(self):
+    def open_gripper(self, position=0.04):
         self.get_logger().info("Opening gripper")
 
         goal = MoveGroup.Goal()
         goal.request.group_name = "hand"
         c = Constraints(name="open_hand")
 
-        target_open = 0.02
-
         for joint in ["panda_finger_joint1", "panda_finger_joint2"]:
             c.joint_constraints.append(
                 JointConstraint(
                     joint_name=joint,
-                    position=target_open,
+                    position=position,
                     tolerance_above=0.002,
                     tolerance_below=0.002,
                     weight=1.0
@@ -217,13 +224,13 @@ class MoveItCommander(Node):
         goal.request.goal_constraints.append(c)
         return self.send_moveit_goal(goal)
 
-    def go_to_pose_cartesian(self, target_pose):
+    def go_to_pose_cartesian(self, target_pose, speed_scale=3.0):
         req = GetCartesianPath.Request()
         req.header.frame_id = "panda_link0"
         req.group_name = "panda_arm"
         req.link_name = "panda_link8"
         req.waypoints = [target_pose]
-        req.max_step = 0.01
+        req.max_step = 0.01 
         req.jump_threshold = 0.0
         req.avoid_collisions = True
 
@@ -239,6 +246,28 @@ class MoveItCommander(Node):
         if result.fraction < 0.90:
             self.get_logger().warn(f"Cartesian path incomplete: {result.fraction}")
             return False
+
+        trajectory = result.solution.joint_trajectory
+        
+        if speed_scale > 1.0:
+            for point in trajectory.points:
+                time_total_sec = point.time_from_start.sec + point.time_from_start.nanosec * 1e-9
+                new_time_total = time_total_sec * speed_scale
+                
+                point.time_from_start.sec = int(new_time_total)
+                point.time_from_start.nanosec = int((new_time_total - int(new_time_total)) * 1e9)
+                
+                new_velocities = []
+                new_accelerations = []
+                
+                for v in point.velocities:
+                    new_velocities.append(v / speed_scale)
+                    
+                for a in point.accelerations:
+                    new_accelerations.append(a / (speed_scale * speed_scale))
+                    
+                point.velocities = new_velocities
+                point.accelerations = new_accelerations
 
         goal = ExecuteTrajectory.Goal()
         goal.trajectory = result.solution
@@ -262,19 +291,18 @@ class MoveItCommander(Node):
 
         target = grasp_msg
         pre_grasp_z = target.position.z + 0.40
-        grasp_height_z = target.position.z + 0.15
+        grasp_height_z = target.position.z + 0.13
 
         self.get_logger().info("Going to pre-grasp")
         success = self.go_to_pose(
             target.position.x,
             target.position.y,
             pre_grasp_z,
-            orientation=target.orientation
+            orientation=top_down_orientation
         )
         if not success:
             return False
 
-        self.get_logger().info("Opening gripper")
         self.open_gripper()
         time.sleep(3.0)
 
@@ -282,25 +310,24 @@ class MoveItCommander(Node):
         grasp_pose = Pose()
         grasp_pose.position = target.position
         grasp_pose.position.z = grasp_height_z
-        grasp_pose.orientation = target.orientation
+        grasp_pose.orientation = top_down_orientation
 
         return self.go_to_pose_cartesian(grasp_pose)
 
     def perform_realignment_maneuver(self):
-        self.get_logger().info("Realigning (up 20cm)")
+        self.get_logger().info("Realigning (up 27cm)")
 
         if not self.latest_grasp:
             return False
 
         retreat_pose = Pose()
         retreat_pose.position = self.latest_grasp.position
-        retreat_pose.position.z += 0.35
-        retreat_pose.orientation = self.latest_grasp.orientation
+        retreat_pose.position.z += 0.27
+        retreat_pose.orientation = top_down_orientation
 
         return self.go_to_pose_cartesian(retreat_pose)
 
     def perform_finish_pick(self):
-        self.get_logger().info("Closing gripper")
         self.close_gripper()
         time.sleep(5.0)
 
@@ -311,7 +338,7 @@ class MoveItCommander(Node):
         lift_pose = Pose()
         lift_pose.position = self.latest_grasp.position
         lift_pose.position.z += 0.40
-        lift_pose.orientation = self.latest_grasp.orientation
+        lift_pose.orientation = top_down_orientation
 
         self.go_to_pose_cartesian(lift_pose)
 
@@ -337,7 +364,8 @@ def user_interface(node):
 
         elif opt == '2':
             node.stop_perception()
-            node.go_to_pose(0.3, 0.0, 0.6)
+            node.go_to_pose(0.3, 0.0, 0.6, orientation=top_down_orientation)
+            node.close_gripper()
 
         elif opt == '1':
             while True:
@@ -385,7 +413,8 @@ def user_interface(node):
                     success = node.perform_approach(node.latest_grasp)
                     if not success:
                         print("Approach failed")
-                        node.go_to_pose(0.3, 0.0, 0.6)
+                        node.go_to_pose(0.3, 0.0, 0.6, orientation=top_down_orientation)
+                        node.close_gripper()
                         break
 
                     print("\nRobot at target")
@@ -403,10 +432,12 @@ def user_interface(node):
                     elif decision == 'r':
                         node.perform_realignment_maneuver()
                         node.set_perception_target(obj_name)
+                        node.close_gripper()
                         continue
 
                     elif decision == 'c':
-                        node.go_to_pose(0.3, 0.0, 0.6)
+                        node.go_to_pose(0.3, 0.0, 0.6, orientation=top_down_orientation)
+                        node.close_gripper()
                         node.stop_perception()
                         break
 

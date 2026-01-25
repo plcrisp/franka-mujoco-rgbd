@@ -260,10 +260,10 @@
                         <geom mesh="finger_0" material="off_white" class="visual"/>
                         <geom mesh="finger_1" material="black" class="visual"/>
                         <geom mesh="finger_0" class="collision"/>
-                        <geom class="fingertip_pad_collision_1" solref="0.01 1" solimp="0.95 0.99 0.002"/>
-                        <geom class="fingertip_pad_collision_2" solref="0.01 1" solimp="0.95 0.99 0.002"/>
-                        <geom class="fingertip_pad_collision_3" solref="0.01 1" solimp="0.95 0.99 0.002"/>
-                        <geom name="left_finger_pad" class="fingertip_pad_collision_4" solref="0.01 1" solimp="0.95 0.99 0.002" friction="1.5 0.02 0.001"/>
+                        <geom class="fingertip_pad_collision_1" solref="0.02 1" solimp="0.95 0.99 0.001"/>
+                        <geom class="fingertip_pad_collision_2" solref="0.02 1" solimp="0.95 0.99 0.001"/>
+                        <geom class="fingertip_pad_collision_3" solref="0.02 1" solimp="0.95 0.99 0.001"/>
+                        <geom name="left_finger_pad" class="fingertip_pad_collision_4" solref="0.02 1" solimp="0.95 0.99 0.001" friction="1.5 0.02 0.001"/>
                       </body>
 
                       <body name="right_finger" pos="0 0 0.0584" quat="0 0 0 1">
@@ -272,10 +272,10 @@
                         <geom mesh="finger_0" material="off_white" class="visual"/>
                         <geom mesh="finger_1" material="black" class="visual"/>
                         <geom mesh="finger_0" class="collision"/>
-                        <geom class="fingertip_pad_collision_1" solref="0.01 1" solimp="0.95 0.99 0.002"/>
-                        <geom class="fingertip_pad_collision_2" solref="0.01 1" solimp="0.95 0.99 0.002"/>
-                        <geom class="fingertip_pad_collision_3" solref="0.01 1" solimp="0.95 0.99 0.002"/>
-                        <geom name="right_finger_pad" class="fingertip_pad_collision_4" solref="0.01 1" solimp="0.95 0.99 0.002" friction="1.5 0.02 0.001"/>
+                        <geom class="fingertip_pad_collision_1" solref="0.02 1" solimp="0.95 0.99 0.001"/>
+                        <geom class="fingertip_pad_collision_2" solref="0.02 1" solimp="0.95 0.99 0.001"/>
+                        <geom class="fingertip_pad_collision_3" solref="0.02 1" solimp="0.95 0.99 0.001"/>
+                        <geom name="right_finger_pad" class="fingertip_pad_collision_4" solref="0.02 1" solimp="0.95 0.99 0.001" friction="1.5 0.02 0.001"/>
                       
                       </body>
 
