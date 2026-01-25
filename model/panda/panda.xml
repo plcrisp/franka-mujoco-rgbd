@@ -342,12 +342,12 @@
             forcerange="-20 20"/>
 
     <!-- Gripper -->
-    <general name="gripper_act"
-         tendon="split"
-         gainprm="0.015686"
-         biasprm="0 -120 -12"
-         forcerange="-120 120"
-         ctrlrange="0 255"/>
+    <position name="gripper_act" 
+              joint="finger_joint1" 
+              kp="1000" 
+              kv="100"
+              ctrlrange="0 0.04" 
+              forcerange="-100 100"/>
   </actuator>
 
 

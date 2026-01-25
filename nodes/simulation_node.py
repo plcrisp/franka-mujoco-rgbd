@@ -18,6 +18,8 @@ XML_PATH = "model/scene.xml"
 CAM_NAME = "end_effector_camera"
 WIDTH, HEIGHT = 640, 480
 
+USE_SCALING = False
+
 
 class SimulationNode(Node):
     def __init__(self):
@@ -67,6 +69,9 @@ class SimulationNode(Node):
         self.mujoco_finger_ids = []
         self.current_gripper_val = 0.0
 
+        self.m = mujoco.MjModel.from_xml_path(path)
+        self.data = mujoco.MjData(self.m)
+
         self._map_joints()
 
         # Target buffers
@@ -83,6 +88,7 @@ class SimulationNode(Node):
         self._setup_camera_intrinsics()
 
         self.get_logger().info("Simulation started")
+        self.get_logger().info(f"DEBUG MODE: Scaling is {'ON (255)' if USE_SCALING else 'OFF (Direct Mapping)'}")
 
     # Joint mapping
     def _map_joints(self):
@@ -97,7 +103,7 @@ class SimulationNode(Node):
             self.mujoco_joint_ids.append(jid)
 
         self.gripper_actuator_id = mujoco.mj_name2id(
-            self.m, mujoco.mjtObj.mjOBJ_ACTUATOR, "actuator8"
+            self.m, mujoco.mjtObj.mjOBJ_ACTUATOR, "gripper_act"
         )
 
         for name in ["finger_joint1", "finger_joint2"]:
@@ -108,7 +114,7 @@ class SimulationNode(Node):
 
         if self.gripper_actuator_id == -1:
             self.get_logger().error(
-                "ERROR: 'actuator8' not found in XML"
+                "ERROR: 'gripper_act' not found in XML"
             )
         else:
             self.get_logger().info(
@@ -140,12 +146,13 @@ class SimulationNode(Node):
 
     # ROS callback
     def joint_callback(self, msg):
+        # Update Arm
         for i, ros_name in enumerate(self.ros_joint_names):
             if ros_name in msg.name:
                 self.target_arm_qpos[i] = msg.position[
                     msg.name.index(ros_name)
                 ]
-
+        # Update Gripper
         for i, ros_name in enumerate(self.ros_finger_names):
             if ros_name in msg.name:
                 self.target_finger_qpos[i] = msg.position[
@@ -154,6 +161,8 @@ class SimulationNode(Node):
 
     # Main simulation loop
     def run(self):
+        log_counter = 0
+        
         with mujoco.viewer.launch_passive(self.m, self.d) as viewer:
             while viewer.is_running() and rclpy.ok():
                 step_start = time.time()
@@ -161,27 +170,36 @@ class SimulationNode(Node):
                 # Arm joints (teleport)
                 for i, jid in enumerate(self.mujoco_joint_ids):
                     if jid != -1:
-                        self.d.qpos[
-                            self.m.jnt_qposadr[jid]
-                        ] = self.target_arm_qpos[i]
+                        self.d.qpos[self.m.jnt_qposadr[jid]] = self.target_arm_qpos[i]
 
-                # Gripper target (ROS -> MuJoCo scale)
-                ros_target = self.target_finger_qpos[0]
-                target_mujoco = (ros_target / 0.04) * 255.0
-                target_mujoco = max(
-                    0.0, min(255.0, target_mujoco)
-                )
+                # --- GRIPPER LOGIC & DEBUG ---
+                ros_target = self.target_finger_qpos[0] 
 
-                # Smooth control
-                alpha = 0.15
-                self.current_gripper_val += alpha * (
-                    target_mujoco - self.current_gripper_val
-                )
+                # 1. Alvo final (Mapeamento 1:1 em Metros)
+                target_mujoco = ros_target
+                target_mujoco = max(0.0, min(0.04, target_mujoco))
 
+                # 2. Fator de Suavização (Alpha)
+                # 0.05 = Muito lento/suave (como hidráulica)
+                # 0.20 = Rápido mas fluido
+                # 1.00 = Instantâneo (sem suavização)
+                alpha = 0.08  
+
+                # 3. Aplica o filtro (Média Exponencial)
+                # O valor atual "caminha" 8% da distância em direção ao alvo a cada loop
+                diff = target_mujoco - self.current_gripper_val
+                self.current_gripper_val += alpha * diff
+                
+                # Envia para o MuJoCo
                 if self.gripper_actuator_id != -1:
-                    self.d.ctrl[
-                        self.gripper_actuator_id
-                    ] = self.current_gripper_val
+                    self.d.ctrl[self.gripper_actuator_id] = self.current_gripper_val
+
+                # LOGGING (A cada 100 loops para não travar o terminal)
+                log_counter += 1
+                if log_counter % 100 == 0:
+                    self.get_logger().info(
+                        f"[GRIPPER DEBUG] ROS: {ros_target:.4f} | MuJoCo Target: {target_mujoco:.4f} | Atual: {self.current_gripper_val:.4f}"
+                    )
 
                 mujoco.mj_step(self.m, self.d)
                 viewer.sync()
@@ -231,6 +249,7 @@ def main(args=None):
 
     try:
         node.run()
+
     finally:
         node.destroy_node()
         rclpy.shutdown()
