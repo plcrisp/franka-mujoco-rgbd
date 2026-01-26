@@ -81,7 +81,7 @@ Run the following commands to install the necessary system dependencies:
 
 
 
-## 2. Project Installation
+## 🚀  **Project Installation**
 
 ### 1. System Dependencies (APT)
 Install ROS 2 packages, MoveIt, and hardware controllers.
@@ -116,7 +116,7 @@ This project relies on `rclpy` (ROS 2 Python client), which is a system package 
 
     If not using a venv, simply run: `pip install -r requirements.txt`.
 
-## 3. How to Run
+## ▶️ **How to Run**
 
 The project includes an automated script that starts all necessary nodes.
 
@@ -144,3 +144,35 @@ This will open several terminal tabs executing the Simulation, MoveIt, YOLO Visi
 ## Common Troubleshooting
 * **`ModuleNotFoundError: No module named 'rclpy'`:** You are likely in a standard `venv` that cannot see system packages. Recreate your venv using the `--system-site-packages` flag (see Section 2).
 * **`ros2: command not found`:** You forgot to run `source /opt/ros/humble/setup.bash` before starting.
+
+## 🆕 **How to Add and Train New Objects**
+
+If you want the robot to manipulate a new object (e.g., a banana, a specific tool, or a box), you need to add it to the simulation and retrain the neural network (YOLO) to recognize it. Follow the workflow below:
+
+### **Add the Object to Simulation (MuJoco)**
+
+1. Prepare the Mesh:
+    * Obtain the 3D file of the object(formats `.stl` or `.obj`).
+    * Place the file in the `model/objects/` folder.
+
+2.  Edit the Scene XML (`model/scene.xml`):
+    * Register the mesh in the `<asset>` section.
+    * Add the object body to the `<worldbody>`.  
+
+```xml
+<asset>
+    <mesh name="my_new_object_mesh" file="assets/my_object.stl" scale="0.001 0.001 0.001"/>
+<asset>
+
+<worldbody>
+    <body name="my_new_object" pos="0.5 0.0 0.05">
+        <freejoint/>
+        <geom type="mesh" mesh="my_new_object_mesh" mass="0.1" rgba="1 1 0 1"/>
+    </body>
+</worldbody>
+```
+
+3. Verify: Run the following command in bash and ensure the object appears on the table.
+```bash
+python3 nodes/simulation_node.py
+```
