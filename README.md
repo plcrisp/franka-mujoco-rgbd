@@ -26,10 +26,13 @@ To fulfill these requirements, we engineered a ROS 2 node architecture that proc
 
 ## 🎯 Key Features
 
-* **Real-time Physics:** High-fidelity simulation using MuJoCo.
-* **ROS 2 & MoveIt Integration:** The simulation is synchronized with MoveIt 2 for motion planning and obstacle avoidance.
-* **Computer Vision Pipeline:** Simulates an RGB-D camera attached to the end-effector and integrates **YOLOv8** for real-time object segmentation.
-* **Synthetic Data Generation:** Tools to automatically generate labeled datasets for training vision models.
+* **Real-time Physics**: High-fidelity simulation using MuJoCo for accurate contact dynamics and gravity compensation.
+
+* **Computer Vision Pipeline**: Simulates an RGB-D camera attached to the end-effector and integrates YOLOv8 for real-time object segmentation.
+
+* **Synthetic Data Generation**: Tools to automatically generate labeled datasets for training vision models.
+
+* **ROS 2 & MoveIt Integration**: The simulation is synchronized with MoveIt 2 for motion planning and obstacle avoidance.
 
 ## 1. System Prerequisites
 Before you begin, ensure you have the following installed:
