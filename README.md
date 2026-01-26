@@ -1,8 +1,26 @@
-# Franka Panda MuJoCo Simulation for Grasp Detection
+# **Franka Emika Panda MuJoCo RGB-D Grasp Detection**
 
-This repository contains a modular **MuJoCo** simulation setup for the **Franka Emika Panda** robot, integrated with **ROS 2 Humble**.
+## 📝 **Project Description**
 
-It was developed by **Pedro Crisp**, **Enzo Kozonoe**, and **Murilo Gebra** within the scope of the **Chair of Cyber-Physical Systems at Montanuniversität Leoben**. It serves as a testbed for simulating robotic manipulation, generating synthetic RGB-D datasets, and testing computer vision algorithms for grasp detection.
+Developed by Pedro Crisp, Enzo Kozonoe, and Murilo Gebra at the Chair of Cyber-Physical Systems, Montanuniversität Leoben, this project implements a modular MuJoCo simulation framework integrated with ROS 2 for robotic manipulation and grasp detection.
+
+### **Problem Statement**
+The project was initiated to address three specific technical requirements for a robotic perception pipeline:
+
+1. **Simulation Setup**: Model the Franka Emika Panda robot with a wrist-mounted RGB-D camera in a tabletop scenario using a high-fidelity simulator.
+
+2. **Object Segmentation**: Integrate a baseline object segmentation approach, specifically YOLO, to segment color images pixel-wise.
+
+3. **Grasp Synthesis**: Integrate a grasp pose detection method (such as GPD or Dex-Net) and combine it with the pixel-wise segmentation to derive 3D grasp poses for specific object segments.
+
+### **Proposed Solution**
+To fulfill these requirements, we engineered a ROS 2 node architecture that processes the data in stages:
+
+- **Data Generation**: We utilized MuJoCo to simulate the robot and sensors, implementing a custom wrapper to linearize OpenGL depth buffers into metric depth maps and generating synchronized point clouds.
+
+- **Semantic Segmentation**: We integrated YOLOv8 to process the RGB stream in real-time, outputting binary masks that isolate objects of interest from the background.
+
+- **Targeted Grasping**: We implemented a filtering mechanism that maps 2D YOLO masks to 3D point cloud indices. These isolated clusters are then fed into GPD (Grasp Pose Detection) to sample and rank valid 6-DOF grasp candidates.
 
 ## 🎯 Key Features
 
