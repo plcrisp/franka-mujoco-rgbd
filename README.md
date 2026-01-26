@@ -37,30 +37,49 @@ To fulfill these requirements, we engineered a ROS 2 node architecture that proc
 ## 📸 **Layout & Visuals**
 (Placeholder)
 
-## 1. System Prerequisites
-Before you begin, ensure you have the following installed:
-**Operating System:** Ubuntu 22.04 (Recommended for ROS 2 Humble)
-**ROS 2 Humble:** [Follow the official installation guide](https://docs.ros.org/en/humble/Installation.html)
-**GPD:** GPD installation and its dependencies for ubuntu, if you are not using ubuntu you should [follow the offical installation guide](https://github.com/atenpas/gpd?tab=readme-ov-file#install):
-* [Install Eigen (version 3.4.0)](https://libeigen.gitlab.io/)
+## ⚙️ **System Prerequisites**
+Before you begin, ensure you have the following installed and configured:
 
-* Install pcl
-```bash
-    sudo apt install libpcl-dev\
-```
+* **Operating System**: Ubuntu 22.04 LTS (Recommended for ROS 2 Humble).
 
-**MoveIt 2:** Motion planning framework.
+* **ROS 2 Humble:** Follow the [official installation guide](https://docs.ros.org/en/humble/Installation.html).
+
+### Required Packages
+Run the following commands to install the necessary system dependencies:
+
+1. **MoveIt 2:** Motion planning framework.
+
     ```bash
     sudo apt install ros-humble-moveit
     ```
-**Panda Configuration Package:**
+    
+2. **Panda Configuration Package:** Resources for the Franka Emika Panda robot.
+
     ```bash
     sudo apt install ros-humble-moveit-resources-panda-moveit-config
     ```
-**Gnome Terminal:** Required for the launch script.
+    
+3. **Gnome Terminal:** Required for the multi-tab launch script.
+   
     ```bash
     sudo apt install gnome-terminal
     ```
+
+4. **GPD Dependencies:**
+- **Note**: If you are not using Ubuntu 22.04, please refer to the [Official GPD Installation Guide](https://github.com/atenpas/gpd?tab=readme-ov-file#install) to build dependencies from source.
+- **PCL (Point Cloud Library)**:
+
+```bash
+    sudo apt install libpcl-dev\
+```
+- **Eigen (3.4.0)**: Install [Eigen (version 3.4.0)](https://libeigen.gitlab.io/). Strictly required. On Ubuntu 22.04, the default package is sufficient:
+
+```bash
+    sudo apt install libeigen3-dev
+```
+
+
+
 
 ## 2. Project Installation
 
