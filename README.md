@@ -24,7 +24,7 @@ To fulfill these requirements, we engineered a ROS 2 node architecture that proc
 
 - **Motion Planning**: We employed MoveIt 2 to calculate collision-free trajectories for the selected grasp poses, executing the kinematic solutions on the simulated robot via a ROS 2 control interface.
 
-## 🎯 Key Features
+## 🎯 **Key Features**
 
 * **Real-time Physics**: High-fidelity simulation using MuJoCo for accurate contact dynamics and gravity compensation.
 
@@ -33,6 +33,9 @@ To fulfill these requirements, we engineered a ROS 2 node architecture that proc
 * **Synthetic Data Generation**: Tools to automatically generate labeled datasets for training vision models.
 
 * **ROS 2 & MoveIt Integration**: The simulation is synchronized with MoveIt 2 for motion planning and obstacle avoidance.
+
+## 📸 **Layout & Visuals**
+(Placeholder)
 
 ## 1. System Prerequisites
 Before you begin, ensure you have the following installed:
