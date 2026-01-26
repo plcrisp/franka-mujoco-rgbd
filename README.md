@@ -176,3 +176,56 @@ If you want the robot to manipulate a new object (e.g., a banana, a specific too
 ```bash
 python3 nodes/simulation_node.py
 ```
+
+### **Data Collection & Labeling**
+To teach the robot to "see" the new object, we need to generate a labeled dataset.
+
+1. Automated Data Collection:
+    * Run the simulation in one terminal.
+    * In another terminal, run the collector script:
+    ```bash
+    python3 training/auto_collector.py
+    ```
+    * The robot will move the camera to various viewpoints and save images to `dataset_v2/images`.
+    * Tip: The script will pause periodically. When it does, switch to the MuJoCo window and manually move/rotate the objects with your mouse to create variety, then press ENTER in the terminal to continue.
+  
+2. Annotation (Roboflow)
+    * You need an account on Roboflow. If you don't have it, you can create it [here](https://app.roboflow.com/login).
+    * Create a new project and select Instance Segmentation as the type.
+    * Upload the images generated in `dataset_v2/images`.
+    * **Annotate**:
+        * Open an image.
+        * Select the Smart Polygon tool (Magic Wand/Lightning icon).
+        * Click on your new object to automatically generate the mask.
+        * Assign a class name (e.g., banana).
+    * Go to the "Generate" step.
+    * Click "Export Dataset", select YOLOv8, and download the `.zip` file.
+  
+### **Training & Integration**
+
+1. Prepare Workspace:
+    * Extract the downloaded `.zip` into the project folder (e.g., `training/dataset`).
+    * Ensure the `data.yaml` file inside correctly points to the images.
+
+2. Train the Model:
+    * Open `training/train_yolo.py` and update the `data` argument to point to the new `data.yaml`.
+    * Run the training script:
+   ```bash
+   python3 training/train_yolo.py
+   ```
+   * Wait for the process to finish. The new weights will be saved at `runs/segment/YOUR_RUN_NAME/weights/best.pt`.
+  
+3. Update the Robot Code:
+    * Copy the generated `best.pt` to the `training/` folder.
+    * Update Segmentation Node (`nodes/object_segmentation_node.py`):
+   ```python
+   self.model = YOLO("training/best.pt") # Ensure it points to the new file
+   ```
+   * Update Commander Node (`nodes/commander_node.py`): Add the new object to the menu so you can select it:
+   ```python
+   print("4. New Object")
+   # ... inside the loop ...
+       elif choice == '4':
+           node.set_target("new_object") # Must match the class name used in Roboflow
+           # ...
+   ```
