@@ -22,6 +22,8 @@ To fulfill these requirements, we engineered a ROS 2 node architecture that proc
 
 - **Targeted Grasping**: We implemented a filtering mechanism that maps 2D YOLO masks to 3D point cloud indices. These isolated clusters are then fed into GPD (Grasp Pose Detection) to sample and rank valid 6-DOF grasp candidates.
 
+- **Motion Planning**: We employed MoveIt 2 to calculate collision-free trajectories for the selected grasp poses, executing the kinematic solutions on the simulated robot via a ROS 2 control interface.
+
 ## 🎯 Key Features
 
 * **Real-time Physics:** High-fidelity simulation using MuJoCo.
