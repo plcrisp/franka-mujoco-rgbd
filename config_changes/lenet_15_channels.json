@@ -1,0 +1,15 @@
+{
+  "batch_size": 1,
+  "num_channels": 15,
+  "input_height": 60,
+  "input_width": 60,
+  "conv1_filter_size": 5,
+  "conv1_num_filters": 20,
+  "conv1_stride": 1,
+  "conv2_filter_size": 5,
+  "conv2_num_filters": 50,
+  "conv2_stride": 1,
+  "ip1_hidden_size": 500,
+  "ip2_hidden_size": 2,
+  "dropout_ratio": 0.5
+}
