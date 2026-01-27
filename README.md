@@ -34,8 +34,45 @@ To fulfill these requirements, we engineered a ROS 2 node architecture that proc
 
 * **ROS 2 & MoveIt Integration**: The simulation is synchronized with MoveIt 2 for motion planning and obstacle avoidance.
 
-## 📸 **Layout & Visuals**
-(Placeholder)
+## 🧪 Example Results
+
+Below is a demonstration of the complete perception-to-action pipeline execution.
+
+### 1. Simulation Environment
+
+The simulation setup consists of a robotic manipulator operating over a table with objects placed in the workspace. This environment is used to test perception, grasp generation, and execution in a controlled scenario.
+
+
+
+### 2. Real-time Object Segmentation
+
+The wrist-mounted RGB camera feed is processed by YOLOv8, which detects the target object class (e.g., mug) and produces a segmentation result.
+
+
+
+### 3. RViz Visualization
+
+In RViz, the grasp-related data can be visualized to better understand the perception and planning pipeline.
+
+To visualize the point cloud and grasp pose in RViz:
+
+* Click on **Add** → **By topic** → **PointCloud2**
+
+* Select the topic: __/grasp/debug_cloud__
+
+* Then, click on **Add** → **By topic** → **Pose**
+
+* Select the topic: __/grasp_pose__
+
+This will display the processed point cloud used for grasping and the estimated grasp pose in the scene.
+
+### 4. Binary Mask Output
+
+The system also generates a binary mask representing the segmented object of interest, which is used during the grasp detection process.
+
+### 5. Grasp Execution
+
+The GIF below shows the pre-grasp motion of the robotic gripper, including approach, alignment, and finger opening before contact with the object.
 
 ## ⚙️ **System Prerequisites**
 Before you begin, ensure you have the following installed and configured:
