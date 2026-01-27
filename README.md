@@ -101,21 +101,21 @@ Run the following commands to install system dependencies:
 
 1. **MoveIt 2** (motion planning framework):
 
-        ```bash
+   ```bash
         sudo apt install ros-humble-moveit
-        ```
+   ```
 
 2. **Panda Configuration Package** (Franka Emika Panda resources):
 
-        ```bash
+   ```bash
         sudo apt install ros-humble-moveit-resources-panda-moveit-config
-        ```
+   ```
 
 3. **Gnome Terminal** (required for multi-tab launch script):
 
-        ```bash
+   ```bash
         sudo apt install gnome-terminal
-        ```
+   ```
 
 ## 🚀 **Project Installation**
 
@@ -186,9 +186,9 @@ The project includes an automated script that starts all necessary nodes.
 
 2. **Setup Environment & Run**:
 
-        Load the ROS 2 environment (and your venv, if active) before running the script:
+   Load the ROS 2 environment (and your venv, if active) before running the script:
 
-        ```bash
+   ```bash
         # Load ROS 2 Humble
         source /opt/ros/humble/setup.bash
         
@@ -197,7 +197,7 @@ The project includes an automated script that starts all necessary nodes.
         
         # Run the system
         ./run_all.sh
-        ```
+   ```
 
 This opens several terminal tabs for Simulation, MoveIt, YOLO Vision, and Control nodes.
 
@@ -208,10 +208,10 @@ This opens several terminal tabs for Simulation, MoveIt, YOLO Vision, and Contro
 - **`ros2: command not found`**: Run `source /opt/ros/humble/setup.bash` before starting.
 
 - **RViz doesn't show the robot**: If your keyboard layout is not English, set your locale in `.bashrc`:
-        ```bash
+  ```bash
         export LD_LIBRARY_PATH=$MJ_HOME/lib:$LD_LIBRARY_PATH
         export LC_NUMERIC="en_US.UTF-8"
-        ```
+  ```
 
 ## 🆕 **How to Add and Train New Objects**
 
@@ -220,14 +220,14 @@ To manipulate a new object, add it to the simulation and retrain YOLO to recogni
 ### **Add the Object to Simulation (MuJoCo)**
 
 1. **Prepare the Mesh**:
-        - Obtain the 3D file (`.stl` or `.obj` format)
-        - Place it in the `model/objects/` folder
+- Obtain the 3D file (`.stl` or `.obj` format)
+- Place it in the `model/objects/` folder
 
 2. **Edit the Scene XML** (`model/scene.xml`):
-        - Register the mesh in the `<asset>` section
-        - Add the object body to `<worldbody>`
+- Register the mesh in the `<asset>` section
+- Add the object body to `<worldbody>`
 
-        ```xml
+   ```xml
         <asset>
                 <mesh name="my_new_object_mesh" file="assets/my_object.stl" scale="0.001 0.001 0.001"/>
         </asset>
@@ -238,65 +238,65 @@ To manipulate a new object, add it to the simulation and retrain YOLO to recogni
                         <geom type="mesh" mesh="my_new_object_mesh" mass="0.1" rgba="1 1 0 1"/>
                 </body>
         </worldbody>
-        ```
+   ```
 
 3. **Verify**: Run the simulation and ensure the object appears on the table:
 
-        ```bash
+   ```bash
         python3 nodes/simulation_node.py
-        ```
+   ```
 
 ### **Data Collection & Labeling**
 
 1. **Automated Data Collection**:
-        - Run the simulation in one terminal
-        - In another terminal, run the collector script:
+- Run the simulation in one terminal
+- In another terminal, run the collector script:
 
-        ```bash
+   ```bash
         python3 training/auto_collector.py
-        ```
+   ```
 
-        - The robot moves the camera to various viewpoints and saves images to `dataset_v2/images`
-        - When the script pauses, manually move/rotate objects in the MuJoCo window, then press ENTER to continue
+- The robot moves the camera to various viewpoints and saves images to `dataset_v2/images`
+- When the script pauses, manually move/rotate objects in the MuJoCo window, then press ENTER to continue
 
 2. **Annotation** (using Roboflow):
-        - Create a Roboflow account at [app.roboflow.com](https://app.roboflow.com/login)
-        - Create a new Instance Segmentation project
-        - Upload images from `dataset_v2/images`
-        - Annotate using the Smart Polygon tool to automatically generate masks for your object
-        - Assign the class name (e.g., "banana")
-        - Export the dataset in YOLOv8 format and download the `.zip` file
+- Create a Roboflow account at [app.roboflow.com](https://app.roboflow.com/login)
+- Create a new Instance Segmentation project
+- Upload images from `dataset_v2/images`
+- Annotate using the Smart Polygon tool to automatically generate masks for your object
+- Assign the class name (e.g., "banana")
+- Export the dataset in YOLOv8 format and download the `.zip` file
 
 ### **Training & Integration**
 
 1. **Prepare Workspace**:
-        - Extract the downloaded `.zip` into `training/dataset`
-        - Verify that `data.yaml` points to the correct image paths
+- Extract the downloaded `.zip` into `training/dataset`
+- Verify that `data.yaml` points to the correct image paths
 
 2. **Train the Model**:
-        - Update `training/train_yolo.py` with the path to your new `data.yaml`
-        - Run the training script:
+- Update `training/train_yolo.py` with the path to your new `data.yaml`
+- Run the training script:
 
-        ```bash
+   ```bash
         python3 training/train_yolo.py
-        ```
+   ```
 
-        - Weights are saved at `runs/segment/YOUR_RUN_NAME/weights/best.pt`
+- Weights are saved at `runs/segment/YOUR_RUN_NAME/weights/best.pt`
 
 3. **Update the Robot Code**:
-        - Copy `best.pt` to the `training/` folder
-        - Update the Segmentation Node (`nodes/object_segmentation_node.py`):
+   - Copy `best.pt` to the `training/` folder
+    - Update the Segmentation Node (`nodes/object_segmentation_node.py`):
 
-        ```python
+   ```python
         self.model = YOLO("training/best.pt")
-        ```
+   ```
 
-        - Update the Commander Node (`nodes/commander_node.py`) to add your new object:
+   - Update the Commander Node (`nodes/commander_node.py`) to add your new object:
 
-        ```python
+     ```python
         print("4. New Object")
         # ... inside the loop ...
         elif choice == '4':
                 node.set_target("new_object")  # Must match the Roboflow class name
-        ```
+     ```
 
