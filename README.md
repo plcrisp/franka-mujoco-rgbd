@@ -43,6 +43,7 @@ Before you begin, ensure you have the following installed and configured:
 * **Operating System**: Ubuntu 22.04 LTS (Recommended for ROS 2 Humble).
 
 * **ROS 2 Humble:** Follow the [official installation guide](https://docs.ros.org/en/humble/Installation.html).
+* **GPD Dependencies:** Please look the at the [Official GPD Installation Guide](https://github.com/atenpas/gpd?tab=readme-ov-file#install).
 
 ### Required Packages
 Run the following commands to install the necessary system dependencies:
@@ -65,20 +66,6 @@ Run the following commands to install the necessary system dependencies:
     sudo apt install gnome-terminal
     ```
 
-4. **GPD Dependencies:**
-- **Note**: If you are not using Ubuntu 22.04, please refer to the [Official GPD Installation Guide](https://github.com/atenpas/gpd?tab=readme-ov-file#install) to build dependencies from source.
-- **PCL (Point Cloud Library)**:
-
-```bash
-    sudo apt install libpcl-dev\
-```
-- **Eigen (3.4.0)**: Install [Eigen (version 3.4.0)](https://libeigen.gitlab.io/). Strictly required. On Ubuntu 22.04, the default package is sufficient:
-
-```bash
-    sudo apt install libeigen3-dev
-```
-
-
 
 
 ## 2. Project Installation
@@ -100,6 +87,8 @@ sudo apt install -y \
     ros-humble-message-filters \
     ros-humble-tf2-ros \
     ros-humble-tf-transformations \
+    libpcl-dev\
+    libeigen3-dev\
     python3-numpy \
     python3-venv
 ```
@@ -108,15 +97,18 @@ sudo apt install -y \
 
 **⚠️ Important Note for Virtual Environments (venv):**
 This project relies on `rclpy` (ROS 2 Python client), which is a system package and **cannot** be installed via pip. If you are using a virtual environment, you must create it with the `--system-site-packages` flag to allow access to ROS libraries:
-    
-    # Create venv with system packages access
+
+# Create venv with system packages access
     ```bash
     python3 -m venv venv --system-site-packages
     ```
 
-    If not using a venv, simply run: `pip install -r requirements.txt`.
+If not using a venv, simply run: `pip install -r requirements.txt`.
 
-## 3. How to Run
+## 3. Changing configure packages
+Before running the project you need to change same GPD configuration files, read the readme file inside `config_changes` folder.
+
+## 4. How to Run
 
 The project includes an automated script that starts all necessary nodes.
 
@@ -140,7 +132,21 @@ The project includes an automated script that starts all necessary nodes.
     ```
 
 This will open several terminal tabs executing the Simulation, MoveIt, YOLO Vision, and Control nodes.
-
+## Recomendation
+We recomend putting putting `source /opt/ros/humble/setup.bash` in your `bashrc` using: 
+```bash
+echo source /opt/ros/humble/setup.bash >> ~/.bashrc
+```
+Also, if you're keyboard language is not english add:
+```bash
+echo export LD_LIBRARY_PATH=$MJ_HOME/lib:$LD_LIBRARY_PATH >> ~/.bashrc
+echo export LC_NUMERIC="en_US.UTF-8" >> ~/.bashrc
+```
 ## Common Troubleshooting
 * **`ModuleNotFoundError: No module named 'rclpy'`:** You are likely in a standard `venv` that cannot see system packages. Recreate your venv using the `--system-site-packages` flag (see Section 2).
 * **`ros2: command not found`:** You forgot to run `source /opt/ros/humble/setup.bash` before starting.
+* **`RViz doesn't show the robot`** If you're keyboard language is not english, you need to change your keyboard language to english, putting in your bashrc: 
+```bash
+export LD_LIBRARY_PATH=$MJ_HOME/lib:$LD_LIBRARY_PATH
+export LC_NUMERIC="en_US.UTF-8"
+```
