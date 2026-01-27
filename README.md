@@ -42,17 +42,25 @@ Below is a demonstration of the complete perception-to-action pipeline execution
 
 The simulation setup consists of a robotic manipulator operating over a table with objects placed in the workspace. This environment is used to test perception, grasp generation, and execution in a controlled scenario.
 
-
+<p align="center">
+  <img src="images/simulation.png" width="400">
+</p>
 
 ### 2. Real-time Object Segmentation
 
 The wrist-mounted RGB camera feed is processed by YOLOv8, which detects the target object class (e.g., mug) and produces a segmentation result.
 
-
+<p align="center">
+  <img src="images/segmentation.png" width="400">
+</p>
 
 ### 3. RViz Visualization
 
 In RViz, the grasp-related data can be visualized to better understand the perception and planning pipeline.
+
+<p align="center">
+  <img src="images/rvis.png" width="400">
+</p>
 
 To visualize the point cloud and grasp pose in RViz:
 
@@ -70,9 +78,17 @@ This will display the processed point cloud used for grasping and the estimated 
 
 The system also generates a binary mask representing the segmented object of interest, which is used during the grasp detection process.
 
+<p align="center">
+  <img src="images/mask.png" width="400">
+</p>
+
 ### 5. Grasp Execution
 
 The GIF below shows the pre-grasp motion of the robotic gripper, including approach, alignment, and finger opening before contact with the object.
+
+<p align="center">
+  <img src="images/grasp.gif" width="400">
+</p>
 
 ## ⚙️ **System Prerequisites**
 Before you begin, ensure you have the following installed and configured:
